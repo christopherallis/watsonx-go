@@ -367,11 +367,13 @@ func (c *Client) SimpleChat(modelID, prompt string, options ...ChatOption) (stri
 func (c *Client) BuildChatRequest(modelID string, messages []ChatMessage, opts *ChatOptions) ChatRequest {
 	// Use the project ID from the client (already configured during client creation)
 	projectID := string(c.projectID)
+	spaceID := string(c.spaceID)
 
 	payload := ChatRequest{
 		ModelID:             modelID,
 		Messages:            messages,
 		ProjectID:           &projectID,
+		SpaceID:             &spaceID,
 		Tools:               opts.Tools,
 		ToolChoiceOption:    opts.ToolChoiceOption,
 		ToolChoice:          opts.ToolChoice,

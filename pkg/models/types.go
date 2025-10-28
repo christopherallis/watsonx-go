@@ -7,6 +7,7 @@ import (
 type (
 	WatsonxAPIKey    = string
 	WatsonxProjectID = string
+	WatsonxSpaceID   = string
 	IBMCloudRegion   = string
 	ModelType        = string
 )
@@ -17,6 +18,7 @@ const (
 
 	WatsonxAPIKeyEnvVarName    = "WATSONX_API_KEY"
 	WatsonxProjectIDEnvVarName = "WATSONX_PROJECT_ID"
+	WatsonxSpaceIDEnvVarName   = "WATSONX_SPACE_ID"
 
 	US_South  IBMCloudRegion = "us-south"
 	Dallas    IBMCloudRegion = US_South

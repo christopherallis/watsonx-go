@@ -10,6 +10,7 @@ type ClientOptions struct {
 
 	apiKey    WatsonxAPIKey
 	projectID WatsonxProjectID
+	spaceID   WatsonxSpaceID
 }
 
 func WithURL(url string) ClientOption {
@@ -45,5 +46,11 @@ func WithWatsonxAPIKey(watsonxAPIKey WatsonxAPIKey) ClientOption {
 func WithWatsonxProjectID(projectID WatsonxProjectID) ClientOption {
 	return func(o *ClientOptions) {
 		o.projectID = projectID
+	}
+}
+
+func WithWatsonxSpaceID(spaceID WatsonxSpaceID) ClientOption {
+	return func(o *ClientOptions) {
+		o.spaceID = spaceID
 	}
 }

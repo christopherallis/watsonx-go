@@ -13,7 +13,8 @@ const (
 )
 
 type EmbeddingPayload struct {
-	ProjectID  string            `json:"project_id"`
+	ProjectID  string            `json:"project_id,omitempty"`
+	SpaceID    string            `json:"space_id,omitempty"`
 	Model      string            `json:"model_id"`
 	Inputs     []string          `json:"inputs"`
 	Parameters *EmbeddingOptions `json:"parameters,omitempty"`
@@ -50,6 +51,7 @@ func (m *Client) EmbedDocuments(model string, texts []string, options ...Embeddi
 
 	payload := EmbeddingPayload{
 		ProjectID:  m.projectID,
+		SpaceID:    m.spaceID,
 		Model:      model,
 		Inputs:     texts,
 		Parameters: opts,

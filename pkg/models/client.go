@@ -20,13 +20,14 @@ type Client struct {
 	token     IAMToken
 	apiKey    WatsonxAPIKey
 	projectID WatsonxProjectID
+	spaceID   WatsonxSpaceID
 
 	httpClient Doer
 }
 
 func NewClient(options ...ClientOption) (*Client, error) {
 
-	opts := defaulClientOptions()
+	opts := defaultClientOptions()
 	for _, opt := range options {
 		if opt != nil {
 			opt(opts)
@@ -47,8 +48,12 @@ func NewClient(options ...ClientOption) (*Client, error) {
 		return nil, errors.New("no watsonx API key provided")
 	}
 
-	if opts.projectID == "" {
-		return nil, errors.New("no watsonx project ID provided")
+	if opts.projectID == "" && opts.spaceID == "" {
+		return nil, errors.New("no watsonx project ID or space ID provided")
+	}
+
+	if opts.projectID != "" && opts.spaceID != "" {
+		return nil, errors.New("either project ID or space ID should be provided, not both")
 	}
 
 	m := &Client{
@@ -60,6 +65,7 @@ func NewClient(options ...ClientOption) (*Client, error) {
 		// token: set below
 		apiKey:    opts.apiKey,
 		projectID: opts.projectID,
+		spaceID:   opts.spaceID,
 
 		httpClient: NewHttpClient(),
 	}
@@ -110,7 +116,7 @@ func buildBaseURL(region IBMCloudRegion) string {
 	return fmt.Sprintf(BaseURLFormatStr, region)
 }
 
-func defaulClientOptions() *ClientOptions {
+func defaultClientOptions() *ClientOptions {
 	return &ClientOptions{
 		URL:        os.Getenv(WatsonxURLEnvVarName),
 		IAM:        os.Getenv(WatsonxIAMEnvVarName),
@@ -119,5 +125,6 @@ func defaulClientOptions() *ClientOptions {
 
 		apiKey:    os.Getenv(WatsonxAPIKeyEnvVarName),
 		projectID: os.Getenv(WatsonxProjectIDEnvVarName),
+		spaceID:   os.Getenv(WatsonxSpaceIDEnvVarName),
 	}
 }
