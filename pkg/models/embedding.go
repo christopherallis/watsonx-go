@@ -90,7 +90,7 @@ func (m *Client) generateEmbeddingRequest(payload EmbeddingPayload) (embeddingRe
 	}
 
 	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("Authorization", "Bearer "+m.token.value)
+	req.Header.Set("Authorization", "Bearer "+m.token.Value)
 
 	res, err := m.httpClient.DoWithRetry(req)
 	if err != nil {

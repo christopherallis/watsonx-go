@@ -5,24 +5,24 @@ import (
 	"fmt"
 	"net/url"
 	"os"
-)
 
-const (
-	IAMCloudHost = "iam.cloud.ibm.com"
+	"github.com/IBM/watsonx-go/pkg/auth"
+	"github.com/IBM/watsonx-go/pkg/constants"
+	"github.com/IBM/watsonx-go/pkg/http"
+	"github.com/IBM/watsonx-go/pkg/types"
 )
 
 type Client struct {
 	url        string
-	iam        string
-	region     IBMCloudRegion
 	apiVersion string
 
-	token     IAMToken
-	apiKey    WatsonxAPIKey
-	projectID WatsonxProjectID
-	spaceID   WatsonxSpaceID
+	token *auth.AuthToken
+	auth  auth.Authenticator
 
-	httpClient Doer
+	projectID constants.WatsonxProjectID
+	spaceID   constants.WatsonxSpaceID
+
+	httpClient types.Doer
 }
 
 func NewClient(options ...ClientOption) (*Client, error) {
@@ -35,17 +35,21 @@ func NewClient(options ...ClientOption) (*Client, error) {
 	}
 
 	if opts.URL == "" {
-		// User did not specify a URL, build it from the region
-		opts.URL = buildBaseURL(opts.Region)
+		if opts.CPD != "" {
+			opts.URL = opts.CPD
+		} else {
+			// User did not specify a URL, build it from the region
+			opts.URL = buildBaseURL(opts.Region)
+		}
 	}
 
-	if opts.IAM == "" {
+	if opts.IAM == "" && opts.CPD != "" {
 		// User did not specify a IAM, use the default IAM cloud host
-		opts.IAM = IAMCloudHost
+		opts.IAM = constants.DefaultIAMCloudHost
 	}
 
-	if opts.apiKey == "" {
-		return nil, errors.New("no watsonx API key provided")
+	if opts.apiKey == "" || opts.cpdPassword == "" || opts.cpdAPIKey == "" {
+		return nil, errors.New("no API key or password provided")
 	}
 
 	if opts.projectID == "" && opts.spaceID == "" {
@@ -58,20 +62,28 @@ func NewClient(options ...ClientOption) (*Client, error) {
 
 	m := &Client{
 		url:        opts.URL,
-		iam:        opts.IAM,
-		region:     opts.Region,
 		apiVersion: opts.APIVersion,
 
-		// token: set below
-		apiKey:    opts.apiKey,
+		// token and auth set below
 		projectID: opts.projectID,
 		spaceID:   opts.spaceID,
 
-		httpClient: NewHttpClient(),
+		httpClient: http.NewHttpClient(),
 	}
 
-	err := m.RefreshToken()
+	var a auth.Authenticator
+	var err error
+	if opts.CPD != "" {
+		a, err = auth.NewCPDAuthenticator(m.httpClient, opts.CPD, opts.CPDUsername, opts.cpdPassword, opts.cpdAPIKey)
+	} else {
+		a, err = auth.NewIAMAuthenticator(m.httpClient, opts.apiKey, opts.IAM)
+	}
 	if err != nil {
+		return nil, err
+	}
+	m.auth = a
+
+	if err := m.RefreshToken(); err != nil {
 		return nil, err
 	}
 
@@ -88,7 +100,7 @@ func (m *Client) CheckAndRefreshToken() error {
 
 // RefreshToken generates and sets the model with a new token
 func (m *Client) RefreshToken() error {
-	token, err := GenerateToken(m.httpClient, m.apiKey, m.iam)
+	token, err := m.auth.GenerateToken()
 	if err != nil {
 		return err
 	}
@@ -112,19 +124,24 @@ func (m *Client) generateUrlFromEndpoint(endpoint string) string {
 	return generateTextURL.String()
 }
 
-func buildBaseURL(region IBMCloudRegion) string {
-	return fmt.Sprintf(BaseURLFormatStr, region)
+func buildBaseURL(region constants.IBMCloudRegion) string {
+	return fmt.Sprintf(constants.BaseURLFormatStr, region)
 }
 
 func defaultClientOptions() *ClientOptions {
 	return &ClientOptions{
-		URL:        os.Getenv(WatsonxURLEnvVarName),
-		IAM:        os.Getenv(WatsonxIAMEnvVarName),
-		Region:     DefaultRegion,
-		APIVersion: DefaultAPIVersion,
+		URL:        os.Getenv(constants.WatsonxURLEnvVarName),
+		IAM:        os.Getenv(constants.WatsonxIAMEnvVarName),
+		Region:     constants.DefaultRegion,
+		APIVersion: constants.DefaultAPIVersion,
 
-		apiKey:    os.Getenv(WatsonxAPIKeyEnvVarName),
-		projectID: os.Getenv(WatsonxProjectIDEnvVarName),
-		spaceID:   os.Getenv(WatsonxSpaceIDEnvVarName),
+		cpdPassword: os.Getenv(constants.CPDPasswordEnvVarName),
+		CPD:         os.Getenv(constants.CPDHostEnvVarName),
+		CPDUsername: os.Getenv(constants.CPDUsernameEnvVarName),
+		cpdAPIKey:   os.Getenv(constants.CPDAPIKeyEnvVarName),
+
+		apiKey:    os.Getenv(constants.WatsonxAPIKeyEnvVarName),
+		projectID: os.Getenv(constants.WatsonxProjectIDEnvVarName),
+		spaceID:   os.Getenv(constants.WatsonxSpaceIDEnvVarName),
 	}
 }

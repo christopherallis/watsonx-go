@@ -103,7 +103,7 @@ func (m *Client) generateTextRequest(payload GenerateTextPayload) (generateTextR
 	}
 
 	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("Authorization", "Bearer "+m.token.value)
+	req.Header.Set("Authorization", "Bearer "+m.token.Value)
 
 	res, err := m.httpClient.DoWithRetry(req)
 	if err != nil {
@@ -185,7 +185,7 @@ func (m *Client) generateTextStreamRequest(payload GenerateTextPayload) (<-chan 
 		}
 
 		req.Header.Set("Content-Type", "application/json")
-		req.Header.Set("Authorization", "Bearer "+m.token.value)
+		req.Header.Set("Authorization", "Bearer "+m.token.Value)
 		req.Header.Set("Accept", "text/event-stream")
 
 		res, err := m.httpClient.DoWithRetry(req)

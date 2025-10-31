@@ -4,6 +4,7 @@ import (
 	"os"
 	"testing"
 
+	"github.com/IBM/watsonx-go/pkg/constants"
 	wx "github.com/IBM/watsonx-go/pkg/models"
 )
 
@@ -22,9 +23,9 @@ func eitherProjectOrSpace(t *testing.T, projectId, spaceId string) wx.ClientOpti
 }
 
 func getClient(t *testing.T) *wx.Client {
-	apiKey := os.Getenv(wx.WatsonxAPIKeyEnvVarName)
+	apiKey := os.Getenv(constants.WatsonxAPIKeyEnvVarName)
 
-	projectID, spaceID := os.Getenv(wx.WatsonxProjectIDEnvVarName), os.Getenv(wx.WatsonxSpaceIDEnvVarName)
+	projectID, spaceID := os.Getenv(constants.WatsonxProjectIDEnvVarName), os.Getenv(constants.WatsonxSpaceIDEnvVarName)
 	option := eitherProjectOrSpace(t, projectID, spaceID)
 
 	if apiKey == "" {

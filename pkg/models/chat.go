@@ -419,7 +419,7 @@ func (c *Client) generateChatRequest(payload ChatRequest) (ChatResponse, error) 
 
 	// Set required headers
 	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("Authorization", "Bearer "+c.token.value)
+	req.Header.Set("Authorization", "Bearer "+c.token.Value)
 
 	// Execute the request using the client's HTTP client with retry
 	res, err := c.httpClient.DoWithRetry(req)
