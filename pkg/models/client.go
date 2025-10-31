@@ -68,7 +68,7 @@ func NewClient(options ...ClientOption) (*Client, error) {
 		projectID: opts.projectID,
 		spaceID:   opts.spaceID,
 
-		httpClient: http.NewHttpClient(),
+		httpClient: http.NewHttpClient(opts.disableTLSVerification),
 	}
 
 	var a auth.Authenticator
@@ -143,5 +143,7 @@ func defaultClientOptions() *ClientOptions {
 		apiKey:    os.Getenv(constants.WatsonxAPIKeyEnvVarName),
 		projectID: os.Getenv(constants.WatsonxProjectIDEnvVarName),
 		spaceID:   os.Getenv(constants.WatsonxSpaceIDEnvVarName),
+
+		disableTLSVerification: false,
 	}
 }

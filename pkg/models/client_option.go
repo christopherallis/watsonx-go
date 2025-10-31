@@ -23,6 +23,8 @@ type ClientOptions struct {
 
 	projectID constants.WatsonxProjectID
 	spaceID   constants.WatsonxSpaceID
+
+	disableTLSVerification bool
 }
 
 func WithURL(url string) ClientOption {
@@ -83,5 +85,11 @@ func WithWatsonxProjectID(projectID constants.WatsonxProjectID) ClientOption {
 func WithWatsonxSpaceID(spaceID constants.WatsonxSpaceID) ClientOption {
 	return func(o *ClientOptions) {
 		o.spaceID = spaceID
+	}
+}
+
+func WithDisableTLSVerification() ClientOption {
+	return func(o *ClientOptions) {
+		o.disableTLSVerification = true
 	}
 }
