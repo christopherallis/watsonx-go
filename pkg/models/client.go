@@ -48,7 +48,7 @@ func NewClient(options ...ClientOption) (*Client, error) {
 		opts.IAM = constants.DefaultIAMCloudHost
 	}
 
-	if opts.apiKey == "" || opts.cpdPassword == "" || opts.cpdAPIKey == "" {
+	if opts.apiKey == "" && opts.cpdPassword == "" && opts.cpdAPIKey == "" {
 		return nil, errors.New("no API key or password provided")
 	}
 
