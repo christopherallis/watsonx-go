@@ -43,7 +43,7 @@ func NewClient(options ...ClientOption) (*Client, error) {
 		}
 	}
 
-	if opts.IAM == "" && opts.CPD != "" {
+	if opts.IAM == "" && opts.CPD == "" {
 		// User did not specify a IAM, use the default IAM cloud host
 		opts.IAM = constants.DefaultIAMCloudHost
 	}
