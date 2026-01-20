@@ -52,10 +52,6 @@ func NewClient(options ...ClientOption) (*Client, error) {
 		return nil, errors.New("no API key or password provided")
 	}
 
-	if opts.projectID == "" && opts.spaceID == "" {
-		return nil, errors.New("no watsonx project ID or space ID provided")
-	}
-
 	if opts.projectID != "" && opts.spaceID != "" {
 		return nil, errors.New("either project ID or space ID should be provided, not both")
 	}

@@ -29,7 +29,7 @@ func TestCPDAuthenticator(t *testing.T) {
 		t.Log("Both Password and APIKey was set; defaulting to Password")
 	}
 
-	authenticator, err := NewCPDAuthenticator(http.NewHttpClient(), cpdHost, cpdUsername, cpdPassword, apiKey)
+	authenticator, err := NewCPDAuthenticator(http.NewHttpClient(false), cpdHost, cpdUsername, cpdPassword, apiKey)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -54,7 +54,7 @@ func TestIAMAuthenticator(t *testing.T) {
 		t.Fatal("Unable to test IAM auth; please set required environment variables")
 	}
 
-	authenticator, err := NewIAMAuthenticator(http.NewHttpClient(), apiKey, iam)
+	authenticator, err := NewIAMAuthenticator(http.NewHttpClient(false), apiKey, iam)
 	if err != nil {
 		t.Fatal(err)
 	}
