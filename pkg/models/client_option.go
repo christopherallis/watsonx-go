@@ -39,9 +39,9 @@ func WithIAM(iamHost string) ClientOption {
 	}
 }
 
-func WithCPD(cpdHost string, cpdUsername string) ClientOption {
+func WithCPD(cpdUrl string, cpdUsername string) ClientOption {
 	return func(o *ClientOptions) {
-		o.CPD = cpdHost
+		o.CPD = cpdUrl
 		o.CPDUsername = cpdUsername
 	}
 }

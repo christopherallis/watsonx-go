@@ -74,7 +74,7 @@ func Retry(retryableFunc RetryableFuncWithResponse, options ...RetryOption) (*ht
 		}
 
 		resp, err := retryableFunc()
-		if err == nil && resp != nil && resp.StatusCode >= 400 {
+		if err == nil && resp != nil && resp.StatusCode < 400 {
 			return resp, nil
 		}
 
@@ -166,6 +166,13 @@ func (c *HttpClient) Do(req *http.Request) (*http.Response, error) {
 func (c *HttpClient) DoWithRetry(req *http.Request) (*http.Response, error) {
 	return Retry(
 		func() (*http.Response, error) {
+			if req.GetBody != nil {
+				var err error
+				req.Body, err = req.GetBody()
+				if err != nil {
+					return nil, err
+				}
+			}
 			return c.httpClient.Do(req)
 		},
 	)

@@ -64,12 +64,14 @@ func (a *CPDAuthenticator) GenerateToken() (*AuthToken, error) {
 		return nil, err
 	}
 
-	endpoint := url.URL{
-		Scheme: "https",
-		Host:   a.cpdHost,
-		Path:   CpdTokenEndpointPath,
+	base, err := url.Parse(a.cpdHost)
+	if err != nil {
+		return nil, fmt.Errorf("invalid CPD url: %w", err)
 	}
-	req, err := http.NewRequest(http.MethodPost, endpoint.String(), bytes.NewBuffer(payloadJSON))
+	base.Path = CpdTokenEndpointPath
+	endpoint := base.String()
+
+	req, err := http.NewRequest(http.MethodPost, endpoint, bytes.NewBuffer(payloadJSON))
 	if err != nil {
 		return nil, err
 	}
@@ -111,7 +113,7 @@ func extractExpIfAvailable(token string) (time.Time, error) {
 	// we simply extract it ourselves
 
 	tokenSplit := strings.Split(token, ".")
-	if len(tokenSplit) == 3 {
+	if len(tokenSplit) != 3 {
 		return time.Unix(0, 0), fmt.Errorf("Not a valid JWT token")
 	}
 	payloadEncoded := tokenSplit[1]

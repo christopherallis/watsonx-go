@@ -110,14 +110,15 @@ func (m *Client) generateUrlFromEndpoint(endpoint string) string {
 		"version": {m.apiVersion},
 	}
 
-	generateTextURL := url.URL{
-		Scheme:   "https",
-		Host:     m.url,
-		Path:     endpoint,
-		RawQuery: params.Encode(),
+	base, err := url.Parse(m.url)
+	if err != nil {
+		// fallback
+		base = &url.URL{Scheme: "https", Host: m.url}
 	}
+	base.Path = endpoint
+	base.RawQuery = params.Encode()
 
-	return generateTextURL.String()
+	return base.String()
 }
 
 func buildBaseURL(region constants.IBMCloudRegion) string {
