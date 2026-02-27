@@ -1,6 +1,7 @@
 package test
 
 import (
+	"context"
 	"os"
 	"testing"
 
@@ -38,8 +39,9 @@ func TestClientCreationWithPassing(t *testing.T) {
 
 func TestEmptyPromptError(t *testing.T) {
 	client := getClient(t)
+	ctx := context.Background()
 
-	_, err := client.GenerateText(
+	_, err := client.GenerateText(ctx,
 		"dumby model",
 		"",
 	)
@@ -50,8 +52,9 @@ func TestEmptyPromptError(t *testing.T) {
 
 func TestNilOptions(t *testing.T) {
 	client := getClient(t)
+	ctx := context.Background()
 
-	_, err := client.GenerateText(
+	_, err := client.GenerateText(ctx,
 		"meta-llama/llama-3-70b-instruct",
 		"What day is it?",
 		nil,
@@ -63,8 +66,9 @@ func TestNilOptions(t *testing.T) {
 
 func TestValidPrompt(t *testing.T) {
 	client := getClient(t)
+	ctx := context.Background()
 
-	_, err := client.GenerateText(
+	_, err := client.GenerateText(ctx,
 		"meta-llama/llama-3-70b-instruct",
 		"Test prompt",
 	)
@@ -75,8 +79,9 @@ func TestValidPrompt(t *testing.T) {
 
 func TestGenerateText(t *testing.T) {
 	client := getClient(t)
+	ctx := context.Background()
 
-	result, err := client.GenerateText(
+	result, err := client.GenerateText(ctx,
 		"meta-llama/llama-3-70b-instruct",
 		"Hi, who are you?",
 		wx.WithTemperature(0.9),
@@ -94,8 +99,9 @@ func TestGenerateText(t *testing.T) {
 
 func TestGenerateTextStream(t *testing.T) {
 	client := getClient(t)
+	ctx := context.Background()
 
-	dataChan, err := client.GenerateTextStream(
+	dataChan, err := client.GenerateTextStream(ctx,
 		"google/flan-ul2",
 		"Hi, who are you?",
 		wx.WithTemperature(0.9),
@@ -125,8 +131,9 @@ func TestGenerateTextStream(t *testing.T) {
 
 func TestGenerateTextWithNoPrompt(t *testing.T) {
 	client := getClient(t)
+	ctx := context.Background()
 
-	dataChan, err := client.GenerateTextStream(
+	dataChan, err := client.GenerateTextStream(ctx,
 		"google/flan-ul2",
 		"",
 		wx.WithTemperature(0.9),
@@ -157,8 +164,9 @@ func TestGenerateTextWithNoPrompt(t *testing.T) {
 
 func TestGenerateTextWithNilOptions(t *testing.T) {
 	client := getClient(t)
+	ctx := context.Background()
 
-	result, err := client.GenerateText(
+	result, err := client.GenerateText(ctx,
 		"meta-llama/llama-3-70b-instruct",
 		"Who are you?",
 		nil,

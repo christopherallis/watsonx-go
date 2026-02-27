@@ -3,6 +3,7 @@ package models
 import (
 	"bufio"
 	"bytes"
+	"context"
 	"encoding/json"
 	"errors"
 	"log"
@@ -51,7 +52,7 @@ type generateTextResponse struct {
 }
 
 // GenerateText generates completion text based on a given prompt and parameters
-func (m *Client) GenerateText(model, prompt string, options ...GenerateOption) (GenerateTextResult, error) {
+func (m *Client) GenerateText(ctx context.Context, model, prompt string, options ...GenerateOption) (GenerateTextResult, error) {
 	m.CheckAndRefreshToken()
 
 	if prompt == "" {
@@ -73,7 +74,7 @@ func (m *Client) GenerateText(model, prompt string, options ...GenerateOption) (
 		Parameters: opts,
 	}
 
-	response, err := m.generateTextRequest(payload)
+	response, err := m.generateTextRequest(ctx, payload)
 	if err != nil {
 		return GenerateTextResult{}, err
 	}
@@ -89,7 +90,7 @@ func (m *Client) GenerateText(model, prompt string, options ...GenerateOption) (
 
 // generateTextRequest sends the generate request and handles the response using the http package.
 // Returns error on non-2XX response
-func (m *Client) generateTextRequest(payload GenerateTextPayload) (generateTextResponse, error) {
+func (m *Client) generateTextRequest(ctx context.Context, payload GenerateTextPayload) (generateTextResponse, error) {
 	textUrl := m.generateUrlFromEndpoint(GenerateTextEndpoint)
 
 	payloadJSON, err := json.Marshal(payload)
@@ -97,7 +98,7 @@ func (m *Client) generateTextRequest(payload GenerateTextPayload) (generateTextR
 		return generateTextResponse{}, err
 	}
 
-	req, err := http.NewRequest(http.MethodPost, textUrl, bytes.NewBuffer(payloadJSON))
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, textUrl, bytes.NewBuffer(payloadJSON))
 	if err != nil {
 		return generateTextResponse{}, err
 	}
@@ -121,7 +122,7 @@ func (m *Client) generateTextRequest(payload GenerateTextPayload) (generateTextR
 }
 
 // GenerateTextStream generates completion text channel (stream) based on a given prompt and parameters
-func (m *Client) GenerateTextStream(model, prompt string, options ...GenerateOption) (<-chan GenerateTextResult, error) {
+func (m *Client) GenerateTextStream(ctx context.Context, model, prompt string, options ...GenerateOption) (<-chan GenerateTextResult, error) {
 	dataChan := make(chan GenerateTextResult)
 
 	if prompt == "" {
@@ -149,7 +150,7 @@ func (m *Client) GenerateTextStream(model, prompt string, options ...GenerateOpt
 			Parameters: opts,
 		}
 
-		responseChan, _ := m.generateTextStreamRequest(payload)
+		responseChan, _ := m.generateTextStreamRequest(ctx, payload)
 
 		for data := range responseChan {
 			for _, result := range data.Results {
@@ -164,7 +165,7 @@ func (m *Client) GenerateTextStream(model, prompt string, options ...GenerateOpt
 // generateTextStreamRequest sends the generate request and handles the response using the http package.
 // Closes the channel on non-200 response
 // If any error happens during the streaming, it will be logged and the channel will be closed
-func (m *Client) generateTextStreamRequest(payload GenerateTextPayload) (<-chan generateTextResponse, error) {
+func (m *Client) generateTextStreamRequest(ctx context.Context, payload GenerateTextPayload) (<-chan generateTextResponse, error) {
 	dataChan := make(chan generateTextResponse)
 
 	go func() {
@@ -178,7 +179,7 @@ func (m *Client) generateTextStreamRequest(payload GenerateTextPayload) (<-chan 
 			return
 		}
 
-		req, err := http.NewRequest(http.MethodPost, streamUrl, bytes.NewBuffer(payloadJSON))
+		req, err := http.NewRequestWithContext(ctx, http.MethodPost, streamUrl, bytes.NewBuffer(payloadJSON))
 		if err != nil {
 			log.Println("error creating request: ", err)
 			return

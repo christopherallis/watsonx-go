@@ -2,6 +2,7 @@ package models
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"errors"
 	"net/http"
@@ -39,7 +40,7 @@ type embeddingResponse struct {
 }
 
 // EmbedDocuments embeds the given texts using the specified model.
-func (m *Client) EmbedDocuments(model string, texts []string, options ...EmbeddingOption) (EmbeddingResponse, error) {
+func (m *Client) EmbedDocuments(ctx context.Context, model string, texts []string, options ...EmbeddingOption) (EmbeddingResponse, error) {
 	m.CheckAndRefreshToken()
 
 	opts := &EmbeddingOptions{}
@@ -57,7 +58,7 @@ func (m *Client) EmbedDocuments(model string, texts []string, options ...Embeddi
 		Parameters: opts,
 	}
 
-	response, err := m.generateEmbeddingRequest(payload)
+	response, err := m.generateEmbeddingRequest(ctx, payload)
 	if err != nil {
 		return EmbeddingResponse{}, err
 	}
@@ -70,13 +71,13 @@ func (m *Client) EmbedDocuments(model string, texts []string, options ...Embeddi
 }
 
 // EmbedQuery embeds the given text using the specified model.
-func (m *Client) EmbedQuery(model string, text string, options ...EmbeddingOption) (EmbeddingResponse, error) {
-	return m.EmbedDocuments(model, []string{text}, options...)
+func (m *Client) EmbedQuery(ctx context.Context, model string, text string, options ...EmbeddingOption) (EmbeddingResponse, error) {
+	return m.EmbedDocuments(ctx, model, []string{text}, options...)
 }
 
 // generateEmbeddingRequest sends a request to the embedding endpoint with the given payload.
 // return the response from the server if and only if the request is successful, code 200.
-func (m *Client) generateEmbeddingRequest(payload EmbeddingPayload) (embeddingResponse, error) {
+func (m *Client) generateEmbeddingRequest(ctx context.Context, payload EmbeddingPayload) (embeddingResponse, error) {
 	embeddingUrl := m.generateUrlFromEndpoint(EmbeddingEndpoint)
 
 	payloadJSON, err := json.Marshal(payload)
@@ -84,7 +85,7 @@ func (m *Client) generateEmbeddingRequest(payload EmbeddingPayload) (embeddingRe
 		return embeddingResponse{}, err
 	}
 
-	req, err := http.NewRequest(http.MethodPost, embeddingUrl, bytes.NewBuffer(payloadJSON))
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, embeddingUrl, bytes.NewBuffer(payloadJSON))
 	if err != nil {
 		return embeddingResponse{}, err
 	}

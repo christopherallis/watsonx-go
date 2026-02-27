@@ -1,9 +1,11 @@
 package test
 
 import (
-	wx "github.com/IBM/watsonx-go/pkg/models"
+	"context"
 	"reflect"
 	"testing"
+
+	wx "github.com/IBM/watsonx-go/pkg/models"
 )
 
 const (
@@ -13,10 +15,10 @@ const (
 
 func TestEmbeddingSingleQuery(t *testing.T) {
 	client := getClient(t)
-
+	ctx := context.Background()
 	text := "Hello, world!"
 
-	response, err := client.EmbedQuery(EmbeddingModelId, text)
+	response, err := client.EmbedQuery(ctx, EmbeddingModelId, text)
 
 	if err != nil {
 		t.Fatalf("Expected no error for embedding query, but got %v", err)
@@ -41,10 +43,11 @@ func TestEmbeddingSingleQuery(t *testing.T) {
 
 func TestEmbeddingSingleQueryWithOptions(t *testing.T) {
 	client := getClient(t)
+	ctx := context.Background()
 
 	text := "Hello, world!"
 
-	response, err := client.EmbedQuery(
+	response, err := client.EmbedQuery(ctx,
 		EmbeddingModelId,
 		text,
 		wx.WithEmbeddingTruncateInputTokens(2),
@@ -72,7 +75,7 @@ func TestEmbeddingSingleQueryWithOptions(t *testing.T) {
 	}
 
 	// the embedding must be different from the one without truncate options
-	responseNoOptions, err := client.EmbedQuery(EmbeddingModelId, text, wx.WithEmbeddingReturnOptions(true))
+	responseNoOptions, err := client.EmbedQuery(ctx, EmbeddingModelId, text, wx.WithEmbeddingReturnOptions(true))
 	if err != nil {
 		t.Fatalf("Expected no error for embedding query, but got %v", err)
 	}
@@ -84,10 +87,11 @@ func TestEmbeddingSingleQueryWithOptions(t *testing.T) {
 
 func TestEmbeddingMultipleQueries(t *testing.T) {
 	client := getClient(t)
+	ctx := context.Background()
 
 	texts := []string{"Hello, world!", "How are you?"}
 
-	response, err := client.EmbedDocuments(EmbeddingModelId, texts, wx.WithEmbeddingReturnOptions(true))
+	response, err := client.EmbedDocuments(ctx, EmbeddingModelId, texts, wx.WithEmbeddingReturnOptions(true))
 
 	if err != nil {
 		t.Fatalf("Expected no error for embedding queries, but got %v", err)
