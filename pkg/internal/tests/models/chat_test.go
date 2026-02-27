@@ -1,6 +1,7 @@
 package test
 
 import (
+	"context"
 	"strings"
 	"testing"
 
@@ -14,12 +15,13 @@ const (
 
 func TestChatSingleMessage(t *testing.T) {
 	client := getClient(t)
+	ctx := context.Background()
 
 	messages := []wx.ChatMessage{
 		wx.CreateUserMessage("What is the capital of France?"),
 	}
 
-	response, err := client.Chat(modelChatLlama3Integration, messages)
+	response, err := client.Chat(ctx, modelChatLlama3Integration, messages)
 
 	if err != nil {
 		t.Fatalf("Expected no error for chat request, but got %v", err)
@@ -49,6 +51,7 @@ func TestChatSingleMessage(t *testing.T) {
 
 func TestChatMultipleMessages(t *testing.T) {
 	client := getClient(t)
+	ctx := context.Background()
 
 	messages := []wx.ChatMessage{
 		wx.CreateSystemMessage("You are a helpful assistant that answers in one word."),
@@ -56,6 +59,7 @@ func TestChatMultipleMessages(t *testing.T) {
 	}
 
 	response, err := client.Chat(
+		ctx,
 		modelChatLlama3Integration,
 		messages,
 		wx.WithChatTemperature(0.3),
@@ -91,8 +95,10 @@ func TestChatMultipleMessages(t *testing.T) {
 
 func TestSimpleChat(t *testing.T) {
 	client := getClient(t)
+	ctx := context.Background()
 
 	response, err := client.SimpleChat(
+		ctx,
 		modelChatLlama3Integration,
 		"Say 'hello' in French in one word",
 		wx.WithChatTemperature(0.1),
@@ -114,6 +120,7 @@ func TestSimpleChat(t *testing.T) {
 
 func TestChatWithJSONMode(t *testing.T) {
 	client := getClient(t)
+	ctx := context.Background()
 
 	messages := []wx.ChatMessage{
 		wx.CreateSystemMessage("You are a helpful assistant that responds in JSON format."),
@@ -121,6 +128,7 @@ func TestChatWithJSONMode(t *testing.T) {
 	}
 
 	response, err := client.Chat(
+		ctx,
 		modelChatLlama3Integration,
 		messages,
 		wx.WithChatJSONMode(),
@@ -143,12 +151,13 @@ func TestChatWithJSONMode(t *testing.T) {
 
 func TestChatInvalidModel(t *testing.T) {
 	client := getClient(t)
+	ctx := context.Background()
 
 	messages := []wx.ChatMessage{
 		wx.CreateUserMessage("Hello"),
 	}
 
-	_, err := client.Chat(modelChatInvalidIntegration, messages)
+	_, err := client.Chat(ctx, modelChatInvalidIntegration, messages)
 
 	if err == nil {
 		t.Fatal("Expected error for invalid model but got nil")
@@ -157,12 +166,14 @@ func TestChatInvalidModel(t *testing.T) {
 
 func TestChatInvalidParameter(t *testing.T) {
 	client := getClient(t)
+	ctx := context.Background()
 
 	messages := []wx.ChatMessage{
 		wx.CreateUserMessage("Hello"),
 	}
 
 	_, err := client.Chat(
+		ctx,
 		modelChatLlama3Integration,
 		messages,
 		wx.WithChatTemperature(100), // Invalid temperature - should be 0-2

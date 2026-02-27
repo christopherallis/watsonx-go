@@ -2,6 +2,7 @@ package models
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -300,7 +301,7 @@ func CreateAssistantMessage(content string) ChatMessage {
 }
 
 // Chat generates a text chat based on messages and parameters
-func (c *Client) Chat(modelID string, messages []ChatMessage, options ...ChatOption) (ChatResponse, error) {
+func (c *Client) Chat(ctx context.Context, modelID string, messages []ChatMessage, options ...ChatOption) (ChatResponse, error) {
 	// Validate input
 	if modelID == "" {
 		return ChatResponse{}, errors.New("modelID cannot be empty")
@@ -322,7 +323,7 @@ func (c *Client) Chat(modelID string, messages []ChatMessage, options ...ChatOpt
 	payload := c.BuildChatRequest(modelID, messages, opts)
 
 	// Make the API request
-	response, err := c.generateChatRequest(payload)
+	response, err := c.generateChatRequest(ctx, payload)
 	if err != nil {
 		return ChatResponse{}, err
 	}
@@ -336,12 +337,12 @@ func (c *Client) Chat(modelID string, messages []ChatMessage, options ...ChatOpt
 }
 
 // SimpleChat provides a simple interface for single-turn text chat conversations
-func (c *Client) SimpleChat(modelID, prompt string, options ...ChatOption) (string, error) {
+func (c *Client) SimpleChat(ctx context.Context, modelID, prompt string, options ...ChatOption) (string, error) {
 	messages := []ChatMessage{
 		CreateUserMessage(prompt),
 	}
 
-	response, err := c.Chat(modelID, messages, options...)
+	response, err := c.Chat(ctx, modelID, messages, options...)
 	if err != nil {
 		return "", err
 	}
@@ -372,8 +373,6 @@ func (c *Client) BuildChatRequest(modelID string, messages []ChatMessage, opts *
 	payload := ChatRequest{
 		ModelID:             modelID,
 		Messages:            messages,
-		ProjectID:           &projectID,
-		SpaceID:             &spaceID,
 		Tools:               opts.Tools,
 		ToolChoiceOption:    opts.ToolChoiceOption,
 		ToolChoice:          opts.ToolChoice,
@@ -391,11 +390,18 @@ func (c *Client) BuildChatRequest(modelID string, messages []ChatMessage, opts *
 		TimeLimit:           opts.TimeLimit,
 	}
 
+	if projectID != "" {
+		payload.ProjectID = &projectID
+	}
+	if spaceID != "" {
+		payload.SpaceID = &spaceID
+	}
+
 	return payload
 }
 
 // generateChatRequest sends a request to the chat endpoint
-func (c *Client) generateChatRequest(payload ChatRequest) (ChatResponse, error) {
+func (c *Client) generateChatRequest(ctx context.Context, payload ChatRequest) (ChatResponse, error) {
 	// Ensure we have a valid token
 	err := c.CheckAndRefreshToken()
 	if err != nil {
@@ -412,7 +418,7 @@ func (c *Client) generateChatRequest(payload ChatRequest) (ChatResponse, error) 
 	}
 
 	// Create the HTTP request
-	req, err := http.NewRequest(http.MethodPost, chatURL, bytes.NewReader(payloadJSON))
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, chatURL, bytes.NewReader(payloadJSON))
 	if err != nil {
 		return ChatResponse{}, fmt.Errorf("failed to create HTTP request: %w", err)
 	}
