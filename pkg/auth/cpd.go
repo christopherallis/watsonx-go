@@ -110,7 +110,11 @@ func extractExpIfAvailable(token string) (time.Time, error) {
 	// instead of importing a whole jwt library for checking exp,
 	// we simply extract it ourselves
 
-	payloadEncoded := strings.Split(token, ".")[1]
+	tokenSplit := strings.Split(token, ".")
+	if len(tokenSplit) == 3 {
+		return time.Unix(0, 0), fmt.Errorf("Not a valid JWT token")
+	}
+	payloadEncoded := tokenSplit[1]
 	payloadDecoded, err := base64.RawURLEncoding.DecodeString(payloadEncoded)
 	if err != nil {
 		return time.Unix(0, 0), err

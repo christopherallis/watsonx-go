@@ -74,7 +74,7 @@ func Retry(retryableFunc RetryableFuncWithResponse, options ...RetryOption) (*ht
 		}
 
 		resp, err := retryableFunc()
-		if err == nil && resp != nil && resp.StatusCode == http.StatusOK {
+		if err == nil && resp != nil && resp.StatusCode >= 400 {
 			return resp, nil
 		}
 
@@ -149,9 +149,9 @@ type HttpClient struct {
 
 func NewHttpClient(disableTLSVerification bool) *HttpClient {
 	c := &http.Client{}
-	if disableTLSVerification == true {
+	if disableTLSVerification {
 		c.Transport = &http.Transport{
-			TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+			TLSClientConfig: &tls.Config{InsecureSkipVerify: true}, // #nosec G402
 		}
 	}
 	return &HttpClient{

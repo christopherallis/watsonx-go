@@ -6,6 +6,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"log"
 	"net/http"
 	"strings"
@@ -53,7 +54,10 @@ type generateTextResponse struct {
 
 // GenerateText generates completion text based on a given prompt and parameters
 func (m *Client) GenerateText(ctx context.Context, model, prompt string, options ...GenerateOption) (GenerateTextResult, error) {
-	m.CheckAndRefreshToken()
+	err := m.CheckAndRefreshToken()
+	if err != nil {
+		return GenerateTextResult{}, fmt.Errorf("failed to refresh token: %w", err)
+	}
 
 	if prompt == "" {
 		return GenerateTextResult{}, errors.New("prompt cannot be empty")

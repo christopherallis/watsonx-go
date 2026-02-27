@@ -5,6 +5,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"net/http"
 	"time"
 )
@@ -41,7 +42,10 @@ type embeddingResponse struct {
 
 // EmbedDocuments embeds the given texts using the specified model.
 func (m *Client) EmbedDocuments(ctx context.Context, model string, texts []string, options ...EmbeddingOption) (EmbeddingResponse, error) {
-	m.CheckAndRefreshToken()
+	err := m.CheckAndRefreshToken()
+	if err != nil {
+		return EmbeddingResponse{}, fmt.Errorf("failed to refresh token: %w", err)
+	}
 
 	opts := &EmbeddingOptions{}
 	for _, opt := range options {
@@ -99,8 +103,14 @@ func (m *Client) generateEmbeddingRequest(ctx context.Context, payload Embedding
 	}
 	defer res.Body.Close()
 
-	var embeddingRes embeddingResponse
+	if res.StatusCode != http.StatusOK {
+		// Read response body for error details
+		body := make([]byte, errorChatBodyBufferSize)
+		n, _ := res.Body.Read(body)
+		return embeddingResponse{}, errors.New(string(body[:n]))
+	}
 
+	var embeddingRes embeddingResponse
 	if err := json.NewDecoder(res.Body).Decode(&embeddingRes); err != nil {
 		return embeddingResponse{}, err
 	}
